@@ -16,8 +16,9 @@ app.post("/login", (req, res) => {
 });
 
 // SIGNUP route (FIXED)
-app.post("/signup", (req, res) => {
+app.post("/signup", async (req, res) => {
   console.log(req.body);
+  // const user;
   res.json({ signup: "signup success" });
 });
 
