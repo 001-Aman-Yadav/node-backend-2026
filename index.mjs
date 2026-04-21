@@ -1,71 +1,42 @@
 import express from "express";
-import dotenv from "dotenv";
 import { prisma } from "./prisma/prisma_client.mjs";
-
-dotenv.config();
-
+const PORT = 5000;
 const app = express();
-const port = 3000;
-
 app.use(express.json());
 
-/* ---------- SIGNUP ---------- */
 app.post("/signup", async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-
-    // check user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (existingUser) {
-      return res.status(400).json({ message: "Email already exists" });
-    }
-
-    // create user
-    const user = await prisma.user.create({
-      data: { name, email, password },
-    });
-
-    res.json({
-      message: "Signup successful ",
-      user,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "Signup error" });
-  }
+  console.log(req.body);
+  const user = await prisma.user.create({
+    data: {
+      email: req.body.email,
+      name: req.body.name,
+      password: req.body.password,
+    },
+  });
+  res.json(user);
 });
 
-/* ---------- LOGIN ---------- */
 app.post("/login", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await prisma.user.findUnique({
-      where: { email },
+  const user = await prisma.user.findUnique({
+    where: {
+      email: req.body.email,
+    },
+  });
+  if (!user) {
+    res.status(404).json({
+      error: "user not found",
     });
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    if (user.password !== password) {
-      return res.status(401).json({ message: "Invalid password" });
-    }
-
-    res.json({
-      message: "Login successful ",
-      user,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "Login error" });
+    return;
   }
+  if (user.password !== req.body.password) {
+    res.status(401).json({
+      error: "password not matched",
+    });
+    return;
+  }
+  res.json({ message: "login successful" });
 });
 
-/* ---------- SERVER ---------- */
-app.listen(port, () => {
-  console.log(` server started on 3000 ${port}`);
+app.listen(PORT, () => {
+  console.log(`server started on ${PORT}`);
 });
