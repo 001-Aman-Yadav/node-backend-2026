@@ -72,7 +72,7 @@ app.post("/login", async (req, res) => {
     const token = jwt.sign(
       { id: user.id, name: user.name, email: user.email },
       process.env.TOKEN_SECRET,
-      { expiresIn: "1d" }, // 👈 added expiry
+      { expiresIn: "1d" },
     );
 
     res.json({
@@ -97,6 +97,39 @@ app.patch("/forget_password", async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: "user not found" });
     }
+
+    // Reset_password=============
+
+    app.post("/reset_password", async (req, res) => {
+      try {
+        const { email, otp, newPassword } = req.body;
+
+        const user = await prisma.user.findUnique({
+          where: { email },
+        });
+        if (!user) {
+          return res.status(404).json({ error: "user not found" });
+        }
+
+        if (!user.otp || user.otp !== otp) {
+          return res.status(400).json({ error: "invalid otp" });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            password: hashedPassword,
+            otp: null,
+          },
+        });
+
+        res.json({ message: "password reset successful" });
+      } catch (error) {
+        res.status(500).json({ error: "something went wrong" });
+      }
+    });
 
     // generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
