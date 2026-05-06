@@ -46,3 +46,8 @@ export { Prisma }
  * 
  */
 export type User = Prisma.UserModel
+/**
+ * Model Menu
+ * 
+ */
+export type Menu = Prisma.MenuModel

@@ -8,10 +8,24 @@ datasource db {
 }
 
 model User {
-    id       Int     @id @default(autoincrement())
-    email    String  @unique
-    name     String
-    password String
-    address  String?
-    otp      String?
+    id             Int       @id @default(autoincrement())
+    email          String    @unique
+    name           String
+    password       String
+    address        String?
+    otp            String?
+    otpGeneratedAt DateTime?
+    menus          Menu[]
+}
+
+model Menu {
+    id          Int      @id @default(autoincrement())
+    name        String   @unique
+    description String?
+    price_half  Int
+    price_ful   Int
+    thumbnali   String
+    user        User     @relation(fields: [created_by], references: [id])
+    created_by  Int
+    created_at  DateTime @default(now())
 }
